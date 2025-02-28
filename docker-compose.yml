@@ -1,20 +1,30 @@
-version: '3.8'
+version: '3.8'  # Use latest version
+
 services:
   app:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:secret@db/urlshortener
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy  # Ensure DB is fully ready before starting
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/urlshortener
+      - REDIS_URL=redis://redis:6379/0
+
   db:
     image: postgres
     environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: urlshortener
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+    healthcheck:  # Add a healthcheck to wait for DB readiness
+      test: ["CMD-SHELL", "pg_isready -U user -d urlshortener"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+
   redis:
     image: redis
-    restart: always

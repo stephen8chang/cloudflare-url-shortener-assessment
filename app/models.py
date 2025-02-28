@@ -1,7 +1,6 @@
+from .database import Base
 from sqlalchemy import Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
 
 class ShortURL(Base):
     __tablename__ = "short_urls"
